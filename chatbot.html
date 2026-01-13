@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>UltraChat Gold – Entertainment AI</title>
+<style>
+body{
+  margin:0;
+  font-family:"Segoe UI",sans-serif;
+  background:linear-gradient(135deg,#000,#1b1400);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  padding-top:50px;
+}
+.container{
+  width:450px;
+  max-width:95%;
+  background:#0b0700;
+  border-radius:15px;
+  box-shadow:0 0 50px rgba(255,215,0,0.5);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.navbar{
+  background:gold;
+  color:#000;
+  padding:12px 20px;
+  font-weight:bold;
+  font-size:20px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.chat{
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+  background:linear-gradient(180deg,#1b1400,#000);
+}
+.msg{
+  max-width:75%;
+  padding:10px 14px;
+  margin-bottom:10px;
+  border-radius:15px;
+  font-size:14px;
+  line-height:1.5;
+  box-shadow:0 2px 5px rgba(0,0,0,0.3);
+}
+.user{
+  background:gold;
+  color:black;
+  margin-left:auto;
+}
+.bot{
+  background:#111;
+  color:gold;
+  border:1px solid rgba(255,215,0,0.3);
+}
+.input-area{
+  display:flex;
+  border-top:1px solid rgba(255,215,0,0.3);
+  padding:10px;
+  background: #1a1200;
+}
+input{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  outline:none;
+  font-size:14px;
+  background:#2a1e00;
+  color:gold;
+}
+button{
+  margin-left:6px;
+  padding:10px 14px;
+  background:gold;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+  color:black;
+  transition:0.2s;
+}
+button:hover{
+  background:#ffd700cc;
+}
+#popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#111;
+  border:2px solid gold;
+  padding:20px;
+  border-radius:15px;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  z-index:1000;
+}
+#popup img{
+  max-width:300px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+#popup button{
+  padding:6px 12px;
+  background:gold;
+  color:black;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="navbar">👑 UltraChat Gold</div>
+  <div class="chat" id="chat"></div>
+  <div class="input-area">
+    <input id="input" placeholder="Type or speak...">
+    <button onclick="send()">➤</button>
+    <button onclick="voice()">🎤</button>
+  </div>
+</div>
+
+<!-- Popup for GIF & song -->
+<div id="popup">
+  <img id="popupImg" src="">
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<audio id="song" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+<script>
+let chat=document.getElementById("chat");
+let waitingForMemeYes=false;
+let userName=localStorage.getItem("UltraChatUser")||"";
+let badWords=["gandu","chutiya","madarchod","bhosdike","bhidu"];
+let popup=document.getElementById("popup");
+let popupImg=document.getElementById("popupImg");
+let song=document.getElementById("song");
+
+function add(type,text){
+  let d=document.createElement("div");
+  d.className="msg "+type;
+  d.innerHTML=text;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+function isHindi(t){
+  return /[अ-ह]/.test(t) || ["kya","kaise","haan","nahi","samay","aaj","sunega"].some(w=>t.toLowerCase().includes(w));
+}
+
+function emotion(t){
+  t=t.toLowerCase();
+  if(["sad","dukhi","tired","upset"].some(w=>t.includes(w))) return "sad";
+  if(["happy","khush","awesome"].some(w=>t.includes(w))) return "happy";
+  if(["gussa","angry"].some(w=>t.includes(w))) return "angry";
+  return "neutral";
+}
+
+function reply(user){
+  let u=user.toLowerCase();
+  let hindi=isHindi(user);
+
+  if(badWords.some(w => u.includes(w))){
+    return "Bhiduu, kya gali de raha hai, aau kya apni p…";
+  }
+
+  // Meme GIF + song flow
+  if(waitingForMemeYes && ["haan","ha","yes","sunega"].some(w=>u.includes(w))){
+    waitingForMemeYes=false;
+    showPopup("https://media.giphy.com/media/3o6gbbuLW76jkt8vIc/giphy.gif"); // example GIF
+    playSong();
+    return "Dil na diya… le beta… bolo na kya kya kiya";
+  }
+  if(u.includes("famous meme")||u.includes("meme kya")||u.includes("koi meme")){
+    waitingForMemeYes=true;
+    showPopup("https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"); // meme GIF
+    return hindi
+      ? "Sabse famous meme — 'Krrish ka gana sunega kya?'"
+      : "Famous Indian meme — 'Krrish ka gana sunega kya?'";
+  }
+
+  if(u.includes("my name is")||u.includes("mera naam")){
+    let n=u.split(/my name is|mera naam/i)[1].trim();
+    if(n){
+      userName=n.charAt(0).toUpperCase()+n.slice(1);
+      localStorage.setItem("UltraChatUser",userName);
+      return hindi
+        ? `Nice to meet you, ${userName}!`
+        : `Nice to meet you, ${userName}!`;
+    }
+  }
+
+  if(u.includes("your name")||u.includes("tumhara naam")){
+    return hindi?"Main UltraChat Gold hoon":"I'm UltraChat Gold";
+  }
+
+  if(u.includes("how are you")||u.includes("tum kaise ho")||u.includes("kaise ho")){
+    return hindi?"Main theek hoon, aap kaise ho?":"I’m fine, and you?";
+  }
+  if(u.includes("i am fine")||u.includes("i'm fine")||u.includes("main theek hoon")){
+    return hindi?"Bahut badiya":"Great to hear!";
+  }
+
+  if(["hi","hello","namaste"].some(w=>u.includes(w)))
+    return hindi?"Namaste, main UltraChat hoon":"Hello, I'm UltraChat";
+
+  if(u.includes("time")||u.includes("samay"))
+    return new Date().toLocaleTimeString();
+
+  if(u.includes("date")||u.includes("aaj"))
+    return new Date().toLocaleDateString();
+
+  if(/\d/.test(u)){
+    try{ return "Calculation: "+eval(u.replace("calculate","")); }
+    catch{ return "Calculation error"; }
+  }
+
+  let e=emotion(u);
+  if(e==="sad") return hindi?"Sab theek ho jayega":"Things will get better";
+  if(e==="happy") return hindi?"Bahut badiya":"That's great";
+  if(e==="angry") return hindi?"Shaant ho jao":"Take a deep breath";
+
+  if(userName) return hindi?`${userName}, thoda aur batao`:`${userName}, tell me more`;
+
+  return hindi?"Samjha, aur batao":"I understand, tell me more";
+}
+
+function send(){
+  let i=input.value;
+  if(!i) return;
+  add("user",i);
+  input.value="";
+  setTimeout(()=>{
+    let r=reply(i);
+    add("bot",r);
+    speak(r);
+  },300);
+}
+
+function voice(){
+  let r=new webkitSpeechRecognition();
+  r.lang="en-IN";
+  r.onresult=e=>{
+    input.value=e.results[0][0].transcript;
+    send();
+  };
+  r.start();
+}
+
+function speak(t){
+  let s=new SpeechSynthesisUtterance(t);
+  s.lang=isHindi(t)?"hi-IN":"en-IN";
+  speechSynthesis.speak(s);
+}
+
+function showPopup(src){
+  popupImg.src=src;
+  popup.style.display="flex";
+}
+
+function closePopup(){
+  popup.style.display="none";
+}
+
+function playSong(){
+  song.currentTime=0;
+  song.play();
+}
+</script>
+
+</body>
+</html>
