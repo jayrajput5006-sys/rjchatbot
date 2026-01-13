@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>UltraChat Gold – Entertainment AI</title>
+<title>UltraChat Gold – Mobile Friendly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
   margin:0;
@@ -12,11 +13,12 @@ body{
   justify-content:center;
   align-items:flex-start;
   min-height:100vh;
-  padding-top:50px;
+  padding-top:20px;
 }
 .container{
-  width:450px;
-  max-width:95%;
+  width:95%;
+  max-width:480px;
+  height:90vh;
   background:#0b0700;
   border-radius:15px;
   box-shadow:0 0 50px rgba(255,215,0,0.5);
@@ -27,15 +29,27 @@ body{
 .navbar{
   background:gold;
   color:#000;
-  padding:12px 20px;
+  padding:12px 15px;
   font-weight:bold;
   font-size:20px;
   text-align:center;
   box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.navbar button{
+  background:#111;
+  color:gold;
+  border:none;
+  border-radius:10px;
+  padding:6px 10px;
+  font-size:14px;
+  cursor:pointer;
 }
 .chat{
   flex:1;
-  padding:15px;
+  padding:12px;
   overflow-y:auto;
   background:linear-gradient(180deg,#1b1400,#000);
 }
@@ -47,6 +61,7 @@ body{
   font-size:14px;
   line-height:1.5;
   box-shadow:0 2px 5px rgba(0,0,0,0.3);
+  word-wrap:break-word;
 }
 .user{
   background:gold;
@@ -74,7 +89,7 @@ input{
   background:#2a1e00;
   color:gold;
 }
-button{
+button.sendBtn{
   margin-left:6px;
   padding:10px 14px;
   background:gold;
@@ -85,7 +100,7 @@ button{
   color:black;
   transition:0.2s;
 }
-button:hover{
+button.sendBtn:hover{
   background:#ffd700cc;
 }
 #popup{
@@ -114,25 +129,31 @@ button:hover{
   border:none;
   border-radius:10px;
   cursor:pointer;
+  margin:2px;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="navbar">👑 UltraChat Gold</div>
+  <div class="navbar">
+    👑 UltraChat Gold
+    <button id="soundToggle">Sound ON</button>
+  </div>
   <div class="chat" id="chat"></div>
   <div class="input-area">
     <input id="input" placeholder="Type or speak...">
-    <button onclick="send()">➤</button>
-    <button onclick="voice()">🎤</button>
+    <button class="sendBtn" onclick="send()">➤</button>
+    <button class="sendBtn" onclick="voice()">🎤</button>
   </div>
 </div>
 
-<!-- Popup for GIF & song -->
+<!-- Popup for GIF -->
 <div id="popup">
   <img id="popupImg" src="">
-  <button onclick="closePopup()">Close</button>
+  <div>
+    <button onclick="closePopup()">Close</button>
+  </div>
 </div>
 
 <audio id="song" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
@@ -145,6 +166,13 @@ let badWords=["gandu","chutiya","madarchod","bhosdike","bhidu"];
 let popup=document.getElementById("popup");
 let popupImg=document.getElementById("popupImg");
 let song=document.getElementById("song");
+let soundOn=true;
+
+document.getElementById("soundToggle").onclick=()=>{
+  soundOn=!soundOn;
+  document.getElementById("soundToggle").innerText=soundOn?"Sound ON":"Sound OFF";
+  if(!soundOn) song.pause();
+};
 
 function add(type,text){
   let d=document.createElement("div");
@@ -177,13 +205,13 @@ function reply(user){
   // Meme GIF + song flow
   if(waitingForMemeYes && ["haan","ha","yes","sunega"].some(w=>u.includes(w))){
     waitingForMemeYes=false;
-    showPopup("https://media.giphy.com/media/3o6gbbuLW76jkt8vIc/giphy.gif"); // example GIF
-    playSong();
+    showPopup("https://media.giphy.com/media/3o6gbbuLW76jkt8vIc/giphy.gif"); 
+    if(soundOn) playSong();
     return "Dil na diya… le beta… bolo na kya kya kiya";
   }
   if(u.includes("famous meme")||u.includes("meme kya")||u.includes("koi meme")){
     waitingForMemeYes=true;
-    showPopup("https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"); // meme GIF
+    showPopup("https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"); 
     return hindi
       ? "Sabse famous meme — 'Krrish ka gana sunega kya?'"
       : "Famous Indian meme — 'Krrish ka gana sunega kya?'";
@@ -280,4 +308,3 @@ function playSong(){
 
 </body>
 </html>
-
